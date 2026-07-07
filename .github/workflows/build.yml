@@ -1,165 +1,77 @@
 name: Build and Release
 
 on:
-  push:
-    tags:
-      - 'v*'
-  release:
-    types: [published]
-  workflow_dispatch:
+push:
+tags:
+- 'v*'
+release:
+types: [published]
+workflow_dispatch:
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  HOMEBREW_NO_REQUIRE_TAP_TRUST: 1
+FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+HOMEBREW_NO_REQUIRE_TAP_TRUST: 1
 
 jobs:
-  # BUILD ANDROID
-  build-android:
-    name: Build Android APK
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+build-desktop:
+name: Build on ${{ matrix.os }}
+runs-on: ${{ matrix.os }}
+strategy:
+fail-fast: false
+matrix:
+include:
+- os: ubuntu-latest
+output_name: transfert
+artifact_name: Transfert-linux
+- os: windows-latest
+output_name: transfert.exe
+artifact_name: Transfert-windows
+- os: macos-15
+output_name: transfert
+artifact_name: Transfert-macos
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
+steps:
+- name: Checkout code
+uses: actions/checkout@v4
 
-      - name: Install dependencies
+- name: Setup Python
+uses: actions/setup-python@v5
+with:
+python-version: '3.10'
+
+- name: Install dependencies (Linux)
+if: runner.os == 'Linux'
+    run: |
+    sudo apt-get update
+    sudo apt-get install -y python3-tk xvfb wget
+    pip install pyinstaller pillow
+    
+    - name: Install dependencies (Windows)
+    if: runner.os == 'Windows'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev
-
-      - name: Install buildozer
-        run: |
-          pip install --break-system-packages buildozer
-
-      - name: Build APK
-        run: |
-          cd android
-          buildozer -v android debug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Transfert-android
-          path: android/bin/*.apk
-          if-no-files-found: warn
-
-      - name: Upload to Release
-        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
-        with:
-          files: android/bin/*.apk
-          generate_release_notes: true
-
-  # BUILD DESKTOP
-  build-desktop:
-    name: Build on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            output_name: transfert
-            artifact_name: Transfert-linux
-            appimage: true
-          - os: windows-latest
-            output_name: transfert.exe
-            artifact_name: Transfert-windows
-          - os: macos-15
-            output_name: transfert
-            artifact_name: Transfert-macos
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Install dependencies (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-tk xvfb wget fuse libfuse2
-          pip install pyinstaller pillow
-
-      - name: Install dependencies (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          pip install pyinstaller pillow
-
-      - name: Install dependencies (macOS)
+        pip install pyinstaller pillow
+        
+        - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
-        run: |
-          brew install python-tk
-          pip install pyinstaller pillow
-
-      - name: Build (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          cd src
-          pyinstaller --onefile --windowed --name transfert main.py
-          cd ..
-
-      - name: Build (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          cd src
-          pyinstaller --onefile --windowed --name transfert.exe main.py
-          cd ..
-
-      - name: Build (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          cd src
-          pyinstaller --onefile --windowed --name transfert main.py
-          cd ..
-
-      - name: Create AppImage (Linux)
-        if: runner.os == 'Linux' && matrix.appimage
-        run: |
-          mkdir -p AppDir/usr/bin
-          cp src/dist/transfert AppDir/usr/bin/
-          cat > AppDir/transfert.desktop << 'DESKTOP'
-          [Desktop Entry]
-          Name=Transfert TCP
-          Comment=Transfert de fichiers TCP
-          Exec=transfert
-          Icon=transfert
-          Terminal=false
-          Type=Application
-          Categories=Network;
-          DESKTOP
-          cat > AppDir/AppRun << 'APPRUN'
-          #!/bin/bash
-          HERE="$(dirname "$(readlink -f "$0")")"
-          exec "$HERE/usr/bin/transfert" "$@"
-          APPRUN
-          chmod +x AppDir/AppRun
-          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
-          chmod +x appimagetool-x86_64.AppImage
-          ./appimagetool-x86_64.AppImage --appimage-extract-and-run AppDir Transfert-${{ github.ref_name }}-x86_64.AppImage || echo "AppImage creation skipped"
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact_name }}
-          path: |
-            src/dist/${{ matrix.output_name }}
-            Transfert-*.AppImage
-          if-no-files-found: warn
-
-      - name: Upload to Release
-        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            src/dist/${{ matrix.output_name }}
-            Transfert-*.AppImage
-          generate_release_notes: true
+            run: |
+            brew install python-tk
+            pip install pyinstaller pillow
+            
+            - name: Build
+            run: |
+            cd src
+            pyinstaller --onefile --windowed --name transfert main.py
+            cd ..
+            
+            - name: Upload artifacts
+            uses: actions/upload-artifact@v4
+            with:
+            name: ${{ matrix.artifact_name }}
+            path: src/dist/${{ matrix.output_name }}
+            
+            - name: Upload to Release
+            if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')
+                uses: softprops/action-gh-release@v1
+                with:
+                files: src/dist/${{ matrix.output_name }}
+                generate_release_notes: true
