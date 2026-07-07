@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+*.pyo
+*.spec
+
+# Build
+dist/
+build/
+bin/
+*.app
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Application
+*.AppImage
+*.apk
+*.exe
+*.dmg
+
+# Kivy
+*.kivy
