@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfert TCP - Téléchargement</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/ua-parser-js@1.0.37/dist/ua-parser.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-file-transfer"></i>
+                <h1>Transfert TCP</h1>
+            </div>
+            <p class="subtitle">Transfert de fichiers simplifié</p>
+            <div class="version-badge">
+                Version <span id="version">v1.0.0</span>
+            </div>
+        </header>
+
+        <div class="auto-detect" id="autoDetect">
+            <div class="detect-icon">
+                <i class="fas fa-wand-magic-sparkles"></i>
+            </div>
+            <div class="detect-content">
+                <h3>Nous avons détecté votre appareil</h3>
+                <p id="detectMessage">Chargement...</p>
+                <button id="btnAutoDownload" class="btn btn-primary btn-large">
+                    <i class="fas fa-download"></i> Télécharger et installer
+                </button>
+            </div>
+        </div>
+
+        <div class="download-grid">
+            <div class="platform-card android" data-platform="android">
+                <div class="platform-icon"><i class="fab fa-android"></i></div>
+                <h3>Android</h3>
+                <p class="platform-desc">APK - Version mobile</p>
+                <div class="btn-group">
+                    <a href="#" class="btn btn-download" data-file="transfert.apk">
+                        <i class="fas fa-download"></i> Télécharger
+                    </a>
+                    <button class="btn btn-install" data-platform="android">
+                        <i class="fas fa-play"></i> Installer
+                    </button>
+                </div>
+                <span class="file-size">~25 MB</span>
+            </div>
+
+            <div class="platform-card windows" data-platform="windows">
+                <div class="platform-icon"><i class="fab fa-windows"></i></div>
+                <h3>Windows</h3>
+                <p class="platform-desc">EXE - Version portable</p>
+                <div class="btn-group">
+                    <a href="#" class="btn btn-download" data-file="transfert.exe">
+                        <i class="fas fa-download"></i> Télécharger
+                    </a>
+                    <button class="btn btn-run" data-platform="windows">
+                        <i class="fas fa-play"></i> Lancer
+                    </button>
+                </div>
+                <span class="file-size">~28 MB</span>
+            </div>
+
+            <div class="platform-card linux" data-platform="linux">
+                <div class="platform-icon"><i class="fab fa-linux"></i></div>
+                <h3>Linux</h3>
+                <p class="platform-desc">AppImage - Portable</p>
+                <div class="btn-group">
+                    <a href="#" class="btn btn-download" data-file="Transfert.AppImage">
+                        <i class="fas fa-download"></i> Télécharger
+                    </a>
+                    <button class="btn btn-run" data-platform="linux">
+                        <i class="fas fa-play"></i> Lancer
+                    </button>
+                </div>
+                <span class="file-size">~30 MB</span>
+            </div>
+
+            <div class="platform-card macos" data-platform="macos">
+                <div class="platform-icon"><i class="fab fa-apple"></i></div>
+                <h3>macOS</h3>
+                <p class="platform-desc">DMG - Installateur</p>
+                <div class="btn-group">
+                    <a href="#" class="btn btn-download" data-file="transfert.dmg">
+                        <i class="fas fa-download"></i> Télécharger
+                    </a>
+                    <button class="btn btn-install" data-platform="macos">
+                        <i class="fas fa-play"></i> Installer
+                    </button>
+                </div>
+                <span class="file-size">~28 MB</span>
+            </div>
+
+            <div class="platform-card web" data-platform="web">
+                <div class="platform-icon"><i class="fas fa-globe"></i></div>
+                <h3>Web</h3>
+                <p class="platform-desc">Navigateur - Sans installation</p>
+                <div class="btn-group">
+                    <button class="btn btn-run" data-platform="web">
+                        <i class="fas fa-play"></i> Lancer dans le navigateur
+                    </button>
+                </div>
+                <span class="file-size">~0 MB</span>
+            </div>
+        </div>
+
+        <footer>
+            <div class="footer-links">
+                <a href="https://github.com/ornel-Am/Transfert" target="_blank">
+                    <i class="fab fa-github"></i> Code source
+                </a>
+                <a href="#" id="btnChangelog"><i class="fas fa-list"></i> Changelog</a>
+                <a href="#" id="btnSupport"><i class="fas fa-headset"></i> Support</a>
+            </div>
+            <p class="footer-copy">
+                © 2024 Transfert TCP - <span id="buildDate">1.0.0</span>
+            </p>
+        </footer>
+    </div>
+
+    <script src="assets/js/script.js"></script>
+</body>
+</html>
