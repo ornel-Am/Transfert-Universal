@@ -1,77 +1,52 @@
 name: Build and Release
 
 on:
-push:
-tags:
-- 'v*'
-release:
-types: [published]
-workflow_dispatch:
-
-env:
-FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-HOMEBREW_NO_REQUIRE_TAP_TRUST: 1
+  push:
+    tags:
+      - 'v*'
+  release:
+    types: [published]
+  workflow_dispatch:
 
 jobs:
-build-desktop:
-name: Build on ${{ matrix.os }}
-runs-on: ${{ matrix.os }}
-strategy:
-fail-fast: false
-matrix:
-include:
-- os: ubuntu-latest
-output_name: transfert
-artifact_name: Transfert-linux
-- os: windows-latest
-output_name: transfert.exe
-artifact_name: Transfert-windows
-- os: macos-15
-output_name: transfert
-artifact_name: Transfert-macos
-
-steps:
-- name: Checkout code
-uses: actions/checkout@v4
-
-- name: Setup Python
-uses: actions/setup-python@v5
-with:
-python-version: '3.10'
-
-- name: Install dependencies (Linux)
-if: runner.os == 'Linux'
-    run: |
-    sudo apt-get update
-    sudo apt-get install -y python3-tk xvfb wget
-    pip install pyinstaller pillow
-    
-    - name: Install dependencies (Windows)
-    if: runner.os == 'Windows'
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install deps (Linux)
+        if: runner.os == 'Linux'
         run: |
-        pip install pyinstaller pillow
-        
-        - name: Install dependencies (macOS)
+          sudo apt-get update
+          sudo apt-get install -y python3-tk xvfb
+          pip install pyinstaller
+      - name: Install deps (macOS)
         if: runner.os == 'macOS'
-            run: |
-            brew install python-tk
-            pip install pyinstaller pillow
-            
-            - name: Build
-            run: |
-            cd src
-            pyinstaller --onefile --windowed --name transfert main.py
-            cd ..
-            
-            - name: Upload artifacts
-            uses: actions/upload-artifact@v4
-            with:
-            name: ${{ matrix.artifact_name }}
-            path: src/dist/${{ matrix.output_name }}
-            
-            - name: Upload to Release
-            if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')
-                uses: softprops/action-gh-release@v1
-                with:
-                files: src/dist/${{ matrix.output_name }}
-                generate_release_notes: true
+        run: |
+          brew install python-tk
+          pip install pyinstaller
+      - name: Install deps (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          pip install pyinstaller
+      - name: Build
+        run: |
+          cd src
+          pyinstaller --onefile --windowed --name transfert main.py
+          cd ..
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Transfert-${{ runner.os }}
+          path: src/dist/transfert*
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: src/dist/transfert*
